@@ -1,4 +1,4 @@
-module github.com/hakengineer/ec2-describe-instances
+module github.com/hakengineer/ec2-describe
 
 go 1.14
 
