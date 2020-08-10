@@ -1,12 +1,12 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	flag "github.com/spf13/pflag"
 )
 
 func Session() (sess *session.Session) {
@@ -16,11 +16,20 @@ func Session() (sess *session.Session) {
 	return
 }
 
+var (
+	helpFlag   = flag.BoolP("help", "h", false, "show help message")
+	instanceid = flag.StringP("instanceid", "i", "", "ec2 instanceid")
+	publicipFlag = flag.BoolP("publicip", "p", false, "show public ip address only")
+)
+
 func main() {
 
-	instanceid := flag.String("i", "", "description")
 	flag.Parse()
-	//fmt.Println(*instanceid)
+
+	if *helpFlag {
+		flag.PrintDefaults()
+		return
+	}
 
 	svc := ec2.New(Session())
 	input := &ec2.DescribeInstancesInput{
@@ -28,7 +37,6 @@ func main() {
 			aws.String(*instanceid),
 		},
 	}
-
 	result, err := svc.DescribeInstances(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
@@ -39,6 +47,11 @@ func main() {
 		} else {
 			fmt.Println(err.Error())
 		}
+		return
+	}
+
+	if *publicipFlag {
+		fmt.Println(*result.Reservations[0].Instances[0].NetworkInterfaces[0].Association.PublicIp)
 		return
 	}
 
